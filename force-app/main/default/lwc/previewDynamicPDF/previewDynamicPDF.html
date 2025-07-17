@@ -1,0 +1,31 @@
+<template>
+  <lightning-modal-header label="Preview PDF"></lightning-modal-header>
+  <lightning-modal-body>
+    <div class="slds-grid" style="width: 100%">
+      <div
+        style="min-height: 500px; width: 50%"
+        class="slds-p-bottom_small slds-col"
+      >
+        <h4
+          style="font-weight: bold"
+          class="slds-m-bottom_x-small slds-text-heading_small"
+        >
+          Preview PDF
+        </h4>
+        <iframe
+          src={url}
+          frameborder="0"
+          style="width: 100%; height: 100%"
+        ></iframe>
+      </div>
+    </div>
+  </lightning-modal-body>
+  <lightning-modal-footer>
+    <lightning-button
+      class="slds-m-right_small"
+      variant="brand-outline"
+      label="Close"
+      onclick={handleClose}
+    ></lightning-button>
+  </lightning-modal-footer>
+</template>

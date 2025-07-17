@@ -1,0 +1,88 @@
+<template>
+  <lightning-card variant="base">
+    <div slot="title">PDF Builder</div>
+    <div slot="actions">
+      <lightning-button
+        variant="brand"
+        class="slds-m-left_x-small"
+        label="Preview"
+        onclick={handlePreview}
+      ></lightning-button>
+      <lightning-button
+        variant="brand"
+        class="slds-m-left_x-small"
+        label="Save"
+        onclick={handleSave}
+      ></lightning-button>
+    </div>
+    <div slot="footer"></div>
+
+    <div class="slds-m-around_small">
+      <div class="slds-m-bottom_small slds-grid">
+        <div class="slds-m-right_small slds-col">
+          <lightning-record-edit-form
+            density="compact"
+            object-api-name="PDF_Template__c"
+            record-id={recordId}
+          >
+            <lightning-input-field
+              field-name="Related_Object__c"
+              variant="standard"
+              onchange={onChangeObjects}
+              value={selectedObject}
+            ></lightning-input-field>
+          </lightning-record-edit-form>
+        </div>
+        <div class="slds-col">
+          <c-dynamic-search
+            selected-object={selectedObject}
+            search-field="Name"
+            onrecordselect={handleRecord}
+          ></c-dynamic-search>
+        </div>
+      </div>
+
+      <div class="quill-editor"></div>
+      <!-- Editor -->
+
+      <!-- Modal -->
+      <template if:true={showModal}>
+        <section role="dialog" class="slds-modal slds-fade-in-open">
+          <div class="slds-modal__container">
+            <!-- Header -->
+            <header class="slds-modal__header">
+              <h2 class="slds-modal__title">Insert Merge Field</h2>
+            </header>
+
+            <!-- Body -->
+            <div class="slds-p-around_small slds-modal__content">
+              <lightning-combobox
+                name="mergeFields"
+                label="Select Field"
+                value={selectedField}
+                options={mergeFieldOptions}
+                onchange={handleFieldChange}
+              ></lightning-combobox>
+            </div>
+
+            <!-- Footer -->
+            <footer class="slds-modal__footer">
+              <lightning-button
+                variant="neutral"
+                label="Cancel"
+                class="slds-m-right_x-small"
+                onclick={closeModal}
+              ></lightning-button>
+              <lightning-button
+                variant="brand"
+                label="Insert"
+                onclick={insertSelectedField}
+              ></lightning-button>
+            </footer>
+          </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+      </template>
+    </div>
+  </lightning-card>
+</template>

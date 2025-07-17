@@ -1,0 +1,38 @@
+<template>
+  <div class="search-container">
+    <template if:false={selectedRecord}>
+      <lightning-input
+        label="Search"
+        value={searchTerm}
+        onchange={handleInput}
+        placeholder="Type to search..."
+      ></lightning-input>
+
+      <template if:true={results}>
+        <ul class="results-list">
+          <template for:each={results} for:item="record">
+            <li
+              key={record.Id}
+              class="result-item"
+              data-id={record.Id}
+              onclick={handleSelect}
+            >
+              {record.displayLabel}
+            </li>
+          </template>
+        </ul>
+      </template>
+
+      <template if:true={noResults}>
+        <div class="no-results">No records found.</div>
+      </template>
+    </template>
+
+    <template if:true={selectedRecord}>
+      <div class="slds-m-top_medium selected-record">
+        <span class="record-label">{selectedRecord.displayLabel}</span>
+        <button class="clear-btn" onclick={clearSelection}>×</button>
+      </div>
+    </template>
+  </div>
+</template>

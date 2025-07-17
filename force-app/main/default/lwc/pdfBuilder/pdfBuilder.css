@@ -1,0 +1,9 @@
+.result-item {
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+}
+
+.result-item:hover {
+  background-color: #f3f6f9;
+  border-left: 3px solid #6a5acd; /* match exsCRM primary */
+}

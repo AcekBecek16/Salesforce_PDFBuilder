@@ -1,0 +1,110 @@
+<apex:page renderAs="pdf" showHeader="false" sidebar="false" standardStylesheets="false" applyBodyTag="false" applyHtmlTag="false" controller="dynamicTemplateController">
+<head>
+    <style>
+  
+  #pdf-preview {
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #000;
+  padding: 20px;
+}
+
+/* ----------- Headings ----------- */
+#pdf-preview h1 { font-size: 2em; margin: 0.5em 0; }
+#pdf-preview h2 { font-size: 1.5em; margin: 0.5em 0; }
+#pdf-preview h3 { font-size: 1.17em; margin: 0.5em 0; }
+#pdf-preview h4 { font-size: 1em; margin: 0.5em 0; }
+#pdf-preview h5 { font-size: 0.83em; margin: 0.5em 0; }
+#pdf-preview h6 { font-size: 0.67em; margin: 0.5em 0; }
+
+
+#pdf-preview p { margin: 0.5em 0; }
+#pdf-preview strong { font-weight: bold; }
+#pdf-preview em { font-style: italic; }
+#pdf-preview u { text-decoration: underline; }
+#pdf-preview s { text-decoration: line-through; }
+#pdf-preview a {
+  color: #0645AD;
+  text-decoration: underline;
+  word-break: break-word;
+}
+
+/* ----------- Lists ----------- */
+#pdf-preview ol,
+#pdf-preview ul {
+  padding-left: 1.5em;
+  margin: 0.5em 0;
+}
+
+#pdf-preview ol { list-style-type: decimal; }
+#pdf-preview ul { list-style-type: disc; }
+
+#pdf-preview li {
+  margin: 0.25em 0;
+}
+
+/* ----------- Indentation (from Quill) ----------- */
+#pdf-preview .ql-indent-1 { padding-left: 3em; }
+#pdf-preview .ql-indent-2 { padding-left: 6em; }
+#pdf-preview .ql-indent-3 { padding-left: 9em; }
+#pdf-preview .ql-indent-4 { padding-left: 12em; }
+#pdf-preview .ql-indent-5 { padding-left: 15em; }
+#pdf-preview .ql-indent-6 { padding-left: 18em; }
+#pdf-preview .ql-indent-7 { padding-left: 21em; }
+#pdf-preview .ql-indent-8 { padding-left: 24em; }
+#pdf-preview .ql-indent-9 { padding-left: 27em; }
+
+/* ----------- Text Alignment ----------- */
+#pdf-preview .ql-align-center { text-align: center; }
+#pdf-preview .ql-align-right { text-align: right; }
+#pdf-preview .ql-align-justify { text-align: justify; }
+
+/* ----------- Blockquotes ----------- */
+#pdf-preview blockquote {
+  border-left: 4px solid #ccc;
+  margin: 0.5em 0;
+  padding-left: 1em;
+  color: #555;
+  font-style: italic;
+}
+
+/* ----------- Code Block ----------- */
+#pdf-preview pre,
+#pdf-preview code {
+  font-family: 'Courier New', Courier, monospace;
+  background: #f5f5f5;
+  padding: 0.5em;
+  border-radius: 4px;
+  overflow-x: auto;
+}
+
+/* ----------- Horizontal Rule ----------- */
+#pdf-preview hr {
+  border: none;
+  border-top: 1px solid #ccc;
+  margin: 1em 0;
+}
+
+/* ----------- Images ----------- */
+#pdf-preview img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0.5em 0;
+}
+
+
+    
+    </style>
+</head>
+<body>
+    <div id="pdf-preview">
+        <apex:outputText value="{!renderedBody}" escape="false" />
+    </div>
+</body>
+
+    
+    
+<!-- End Default Content REMOVE THIS -->
+</apex:page>
