@@ -3,7 +3,12 @@ public without sharing class pdfBuilderController {
   public static List<FieldDefinition> getFieldList(String SObjectName) {
     try {
       return [
-        SELECT QualifiedApiName, Label, EntityDefinition.QualifiedApiName
+        SELECT
+          QualifiedApiName,
+          Label,
+          DataType,
+          EntityDefinition.QualifiedApiName,
+          ValueType.DeveloperName
         FROM FieldDefinition
         WHERE EntityDefinition.QualifiedApiName = :SObjectName
       ];

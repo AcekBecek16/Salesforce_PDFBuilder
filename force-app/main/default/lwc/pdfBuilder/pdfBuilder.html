@@ -41,10 +41,29 @@
           ></c-dynamic-search>
         </div>
       </div>
+      <div class="">
+        <lightning-input-rich-text
+          placeholder="Type something"
+          formats={allowedFormats}
+          onchange={handleTextChange}
+          value={content}
+        ></lightning-input-rich-text>
 
-      <div class="quill-editor"></div>
-      <!-- Editor -->
-
+        <div class="slds-m-top_x-small slds-text-align_right">
+          <button
+            class="slds-button slds-button_neutral"
+            onclick={handleOpenModal}
+          >
+            <lightning-icon
+              icon-name="utility:merge_field"
+              alternative-text="Insert Merge Field"
+              size="x-small"
+              class="slds-m-right_x-small"
+            ></lightning-icon>
+            Insert Merge Field
+          </button>
+        </div>
+      </div>
       <!-- Modal -->
       <template if:true={showModal}>
         <section role="dialog" class="slds-modal slds-fade-in-open">
@@ -61,7 +80,7 @@
                 label="Select Field"
                 value={selectedField}
                 options={mergeFieldOptions}
-                onchange={handleFieldChange}
+                onchange={handleChangeSelectedField}
               ></lightning-combobox>
             </div>
 
@@ -74,10 +93,11 @@
                 onclick={closeModal}
               ></lightning-button>
               <lightning-button
+                label="Insert Text"
                 variant="brand"
-                label="Insert"
-                onclick={insertSelectedField}
-              ></lightning-button>
+                onclick={handleInsertField}
+              >
+              </lightning-button>
             </footer>
           </div>
         </section>

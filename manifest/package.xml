@@ -3,16 +3,21 @@
     <types>
         <members>dynamicTemplateController</members>
         <members>pdfBuilderController</members>
+        <members>generatePdfController</members>
+        <members>sampleQuoteController</members>
         <name>ApexClass</name>
     </types>
     <types>
         <members>dynamicTemplate</members>
+        <members>sampleQuoteTemplate</members>
         <name>ApexPage</name>
     </types>
     <types>
         <members>dynamicSearch</members>
         <members>pdfBuilder</members>
         <members>previewDynamicPDF</members>
+        <members>generatePdf</members>
+        <members>modalGeneratePDF</members>
         <name>LightningComponentBundle</name>
     </types>
     <types>

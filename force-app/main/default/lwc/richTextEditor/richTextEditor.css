@@ -1,0 +1,8 @@
+.editor-area {
+  min-height: 200px;
+  padding: 1rem;
+  background: white;
+  border: 1px solid #d8dde6;
+  border-radius: 0.25rem;
+  overflow: auto;
+}

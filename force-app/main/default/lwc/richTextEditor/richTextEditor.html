@@ -1,0 +1,19 @@
+<template>
+  <lightning-input-rich-text
+    placeholder="Type something interesting"
+    formats={allowedFormats}
+    onchange={handleChange}
+  >
+  </lightning-input-rich-text>
+  <div>
+    <lightning-combobox
+      name="mergeFields"
+      label="Select Field"
+      value={selectedField}
+      options={insertFields}
+      onchange={handleFieldChange}
+    ></lightning-combobox>
+    <lightning-button label="Insert Text" onclick={handleClick}>
+    </lightning-button>
+  </div>
+</template>

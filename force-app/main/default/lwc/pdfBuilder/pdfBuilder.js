@@ -1,6 +1,4 @@
 import { api, LightningElement, track, wire } from "lwc";
-import QUILL from "@salesforce/resourceUrl/quill";
-import { loadScript, loadStyle } from "lightning/platformResourceLoader";
 import { getRecord, updateRecord } from "lightning/uiRecordApi";
 import { ShowToastEvent } from "lightning/platformShowToastEvent";
 import Field_ID from "@salesforce/schema/PDF_Template__c.Id";
@@ -19,14 +17,36 @@ export default class PdfBuilder extends LightningElement {
   @track selectedObject = "";
   @track insertMergeFields = [];
 
-  quillInitialized = false;
-  @track editor;
-
   @track showModal = false;
   @track selectedField = "";
-  @track savedCursorPosition = null;
+
+  @track dataFieldList = [];
 
   mergeFieldOptions = [];
+  showModal = false;
+
+  start = 0;
+  end = 0;
+  selectMode = "end";
+
+  allowedFormats = [
+    "font",
+    "size",
+    "bold",
+    "italic",
+    "underline",
+    "strike",
+    "list",
+    "indent",
+    "align",
+    "link",
+    "image",
+    "clean",
+    "table",
+    "header",
+    "color",
+    "background"
+  ];
 
   onChangeObjects(event) {
     this.selectedObject = event.target.value;
@@ -37,6 +57,7 @@ export default class PdfBuilder extends LightningElement {
   async callFieldObject() {
     await getFieldList({ SObjectName: this.selectedObject })
       .then((result) => {
+        this.dataFieldList = result;
         this.mergeFieldOptions = result.map((field) => {
           const objectName =
             field.EntityDefinition?.QualifiedApiName || "Unknown";
@@ -63,25 +84,11 @@ export default class PdfBuilder extends LightningElement {
       this.insertMergeFields = data.fields.Insert_Fields__c.value
         ? JSON.parse(data.fields.Insert_Fields__c.value)
         : [];
+
+      this.callFieldObject();
     } else if (error) {
       console.error(error);
     }
-  }
-
-  renderedCallback() {
-    if (this.quillInitialized) return;
-    this.quillInitialized = true;
-    Promise.all([
-      loadScript(this, QUILL + "/quill/quill.min.js"),
-      loadStyle(this, QUILL + "/quill/quill.snow.css")
-    ])
-      .then(() => {
-        this.initializeQuill();
-        this.callFieldObject();
-      })
-      .catch((error) => {
-        console.error("Error loading Quill assets", error);
-      });
   }
 
   async handlePreview() {
@@ -115,9 +122,8 @@ export default class PdfBuilder extends LightningElement {
   async handleSave() {
     const fields = {};
 
-    if (this.content.length > 0) {
-      fields[Field_BODY.fieldApiName] = this.content;
-    }
+    fields[Field_BODY.fieldApiName] = this.content;
+
     if (this.selectedObject.length > 0) {
       fields[Field_RelatedObject.fieldApiName] = this.selectedObject;
     }
@@ -154,108 +160,84 @@ export default class PdfBuilder extends LightningElement {
       });
   }
 
-  initializeQuill() {
-    const container = this.template.querySelector(".quill-editor");
-
-    const toolbarOptions = [
-      ["bold", "italic", "underline", "strike"],
-      [{ header: 1 }, { header: 2 }],
-      [{ list: "ordered" }, { list: "bullet" }],
-      [{ indent: "-1" }, { indent: "+1" }],
-      [{ direction: "rtl" }],
-      [{ size: ["small", false, "large", "huge"] }],
-      [{ header: [1, 2, 3, 4, 5, 6, false] }],
-      [{ color: [] }, { background: [] }],
-      [{ font: [] }],
-      [{ align: [] }],
-      ["clean"],
-      ["customMerge"]
-    ];
-
-    this.editor = new Quill(container, {
-      theme: "snow",
-      modules: {
-        toolbar: {
-          container: toolbarOptions,
-          handlers: {
-            customMerge: () => {
-              this.showModal = true;
-              this.savedCursorPosition = this.editor.getSelection();
-              this.callFieldObject();
-            }
-          }
-        }
-      },
-      placeholder: "Write something cool..."
-    });
-
-    // Set initial content
-    const delta = this.editor.clipboard.convert(this.content || "");
-    this.editor.setContents(delta);
-
-    // Track changes
-    this.editor.on("text-change", () => {
-      this.content = this.editor.root.innerHTML;
-    });
-
-    setTimeout(() => {
-      const btn = this.template.querySelector(".ql-customMerge");
-      if (btn) {
-        btn.innerHTML = "{ }";
-        btn.title = "Insert Merge Field";
-      }
-    }, 0);
-  }
-
-  // ✅ Allow parent to set content
-  @api
-  setContent(html) {
-    this.content = html;
-    if (this.editor) {
-      const delta = this.editor.clipboard.convert(html);
-      this.editor.setContents(delta);
-    }
-  }
-
-  // ✅ Allow parent to get content
-  @api
-  getContent() {
-    return this.content;
-  }
-
-  handleFieldChange(event) {
-    this.selectedField = event.detail.value;
-  }
-
-  insertSelectedField() {
-    if (!this.selectedField) return;
-
-    // Restore cursor if needed
-    if (this.savedCursorPosition) {
-      this.editor.setSelection(
-        this.savedCursorPosition.index,
-        this.savedCursorPosition.length || 0
-      );
-    }
-    this.insertMergeFields.push(`${this.selectedField.replace("Record.", "")}`);
-
-    const cursor = this.editor.getSelection();
-    if (cursor) {
-      this.editor.insertText(cursor.index, `{!${this.selectedField}}`);
-    }
-
-    this.showModal = false;
-    this.selectedField = "";
-    this.savedCursorPosition = null;
-
-    console.log(JSON.stringify(this.insertMergeFields));
-  }
-
-  closeModal() {
-    this.showModal = false;
+  handleTextChange() {
+    this.content = this.template.querySelector(
+      "lightning-input-rich-text"
+    ).value;
   }
 
   handleRecord(event) {
     this.selectedRecordId = event.detail.recordId;
+  }
+  handleInsertField() {
+    if (!this.content) return;
+
+    const fieldValue = `{!${this.selectedField}}`;
+
+    // Replace cursor placeholder with merge field
+    const updatedContent = this.content.replace("{{cursor}}", fieldValue);
+
+    this.content = updatedContent;
+
+    // update the value back into the input
+    const rte = this.template.querySelector("lightning-input-rich-text");
+    if (rte) {
+      rte.value = this.content;
+    }
+
+    const fillteredFields = this.dataFieldList.filter(
+      (fields) =>
+        fields.QualifiedApiName === this.selectedField.replace("Record.", "")
+    );
+    // console.log(JSON.stringify(fillteredFields, false, 2));
+
+    this.insertMergeFields = [
+      ...this.insertMergeFields,
+      ...fillteredFields.map((item) => {
+        return {
+          fieldName: item.QualifiedApiName,
+          fieldType: item.ValueType.DeveloperName
+        };
+      })
+    ];
+    this.closeModal();
+    // console.log(JSON.stringify(this.insertMergeFields, false, 2));
+  }
+
+  handleMarkCursor() {
+    const rte = this.template.querySelector("lightning-input-rich-text");
+    if (rte) {
+      // Fokus editor dulu
+      rte.focus();
+
+      // Cek apakah ada selection aktif dan posisi cursor
+      const selection = window.getSelection();
+      if (selection.rangeCount === 0 || selection.isCollapsed === false) {
+        // Tidak ada cursor aktif atau ada teks yang diseleksi
+        // Insert placeholder di akhir konten sebagai fallback
+        this.content = (rte.value || "") + "{{cursor}}";
+        rte.value = this.content;
+
+        // Fokus ulang agar cursor di akhir
+        rte.focus();
+      } else {
+        // Ada cursor aktif, insert placeholder di posisi cursor
+        document.execCommand("insertText", false, "{{cursor}}");
+        this.content = rte.value;
+      }
+    }
+  }
+  handleChangeSelectedField() {
+    this.selectedField =
+      this.template.querySelector("lightning-combobox").value;
+  }
+
+  handleOpenModal() {
+    this.showModal = true;
+    this.handleMarkCursor();
+  }
+
+  closeModal() {
+    this.showModal = false;
   }
 }

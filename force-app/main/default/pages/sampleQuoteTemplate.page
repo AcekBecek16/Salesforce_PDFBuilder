@@ -1,0 +1,171 @@
+<apex:page renderAs="pdf" controller="sampleQuoteController">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Surat Maintenance</title>
+    <style>
+      body {
+        font-family: "Arial", sans-serif;
+        margin: 40px;
+        line-height: 1.6;
+        font-size: 12;
+      }
+      .header {
+        text-align: right;
+      }
+      .section-title {
+        font-weight: bold;
+        margin-top: 20px;
+      }
+      ul {
+        margin-top: 0;
+      }
+      .footer {
+        margin-top: 60px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Header -->
+    <div class="header">
+      Cikarang, 4 April 2022<br />
+
+    </div>
+
+    <!-- content -->
+    <div>
+      <p>
+        Kepada Yth:<br />{!campaignMember.Contact.Account.Name}<br /> No.
+
+        {!campaignMember.Contact.Account.BillingStreet}<br />
+        {!campaignMember.Contact.Account.BillingCity},
+        {!campaignMember.Contact.Account.BillingState}<br />
+      </p>
+
+      <div>
+        <table>
+          <tbody>
+            <tr>
+              <td style="width: 70px">Up</td>
+              <td>
+                <strong>: Factory Manager</strong>
+              </td>
+            </tr>
+            <tr>
+              <td>Perihal</td>
+              <td>
+                :
+                <span style="font-style: italic"
+                  >Pemadaman Listrik Sementara</span
+                >
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Dengan hormat,</p>
+      <p>
+        Dalam rangka meningkatkan suplai listrik yang baik kepada pelanggan,
+        kami memberitahukan bahwa akan dilakukan pemadaman listrik sementara
+        untuk pekerjaan
+        <span style="font-weight: bold">Maintenance Hot Point</span> yang
+        dilaksanakan pada:
+      </p>
+      <table style="margin-left: 10px">
+        <tbody>
+          <tr>
+            <td style="width: 120px">Hari/Tanggal</td>
+            <td>
+              :
+              <span style="font-weight: bold; font-style: italic"
+                ><apex:outputText value="{0, date, dd MMMMM yyyy}">
+                  <apex:param value="{!campaignMember.Campaign.StartDate}"
+                  /> </apex:outputText></span>
+            </td>
+          </tr>
+          <tr>
+            <td style="width: 120px">Waktu</td>
+            
+          </tr>
+        </tbody>
+      </table>
+
+      <p>
+        Apabila pekerjaan tersebut diatas dapat kami selesaikan sebelum batas
+        waktu yang ditentukan, maka suplai listrik akan kami nyalakan lebih
+        awal.<br />
+        Sehubungan dengan hal tersebut dimohon agar Bapak/Ibu memperhatikan
+        hal-hal berikut :
+      </p>
+      <p>
+        <strong
+          >* Khusus untuk pelanggan Tegangan Rendah 220 &gt; 380 V (Kontrak Daya
+          &gt; 200KVA)</strong
+        >
+        Apabila teknisi di tempat Bapak / Ibu akan melakukan pekerjaan perawatan
+        panel listrik, penambahan atau modifikasi instalasi listrik, diharap
+        meng-OFF-kan terlebih dahulu Incoming LV (Low Voltage) circuit breaker
+        (ACB, MCCB, MCB) di panel utama Bapak/Ibu dan meng-On-kan kembali
+        setelah pekerjaan tersebut selesai atau menunggu sesuai jadwal diatas
+      </p>
+
+      <p>
+        <strong
+          >* Khusus untuk pelanggan Tegangan Menengah 20 KV (Kontrak Daya &gt;
+          201KVA )</strong
+        >
+        Mohon agar Bapak / Ibu mempersiapkan teknisi
+        <strong>15 Menit sebelum</strong> waktu yang ditentukan diatas untuk
+        koordinasi operasi pemadaman dan penyalaan kembali di tempat Bapak/Ibu
+        pada peralatan MV (Medium Voltage) circuit breaker (LBS, CB, VCB) disisi
+        primer transformer. Harap surat ini dapat didistribusikan dan diketahui
+        oleh
+        <strong
+          >Bagian Teknik, Bagian Produksi dan Bagian Security untuk ijin masuk
+          bagi petugas kami</strong
+        >. Atas perhatian dan kerjasamanya yang baik, kami sampaikan terima
+        kasih.<br />
+        Hormat Kami,
+      </p>
+    </div>
+    <!-- footer -->
+    <div class="footer">
+      <table style="width: 100%">
+        <tbody>
+          <tr style="height: 90px">
+            <td style="width: 60%"></td>
+            <td style="text-align: center; vertical-align: top; width: 40%">
+              Mengetahui
+            </td>
+          </tr>
+          <tr>
+            <td><strong>Administrasi Marketing</strong></td>
+            <td style="text-align: center">
+              (
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              )
+            </td>
+          </tr>
+          <tr>
+            <td>CC: -Bag. Produksi, Security dan Teknik</td>
+            <td>Nama:</td>
+          </tr>
+          <tr>
+            <td></td>
+            <td>No. HP:</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>
+      <em
+        >Surat ini dicetak secara otomatis dan tidak memerlukan tanda
+        tangan.</em
+      >
+      <strong>Note:</strong> Harap segera mengirimkan kembali surat ini yang
+      sudah ditandatangani ke
+      <a href="mailto:marketing@listrindo.com">marketing@listrindo.com</a>
+    </p>
+  </body>
+</apex:page>

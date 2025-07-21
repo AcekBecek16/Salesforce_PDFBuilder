@@ -1,0 +1,42 @@
+<template>
+  <lightning-card icon-name="doctype:pdf" variant="base">
+    <div slot="title">Generate PDF</div>
+    <div slot="actions">
+      <lightning-button
+        label="Preview"
+        class="slds-m-left_x-small"
+        variant="brand-outlie"
+        icon-name="utility:preview"
+        icon-size="small"
+        title="Generate PDF"
+        onclick={handlePreview}
+      ></lightning-button>
+    </div>
+    <div slot="footer"></div>
+    <div
+      style="width: 100%"
+      class="slds-grid slds-grid_vertical slds-p-around_medium"
+    >
+      <div class="slds-col">
+        <lightning-combobox
+          name="emailTemplate"
+          label="Email Template"
+          value={emailValue}
+          placeholder="Select Template"
+          options={templateOptions}
+          onchange={handleChangeTemplate}
+        ></lightning-combobox>
+      </div>
+      <div class="slds-col">
+        <lightning-combobox
+          name="pdfTemplate"
+          label="PDF Template"
+          value={pdfValue}
+          placeholder="Select Template"
+          options={templatePdfOptions}
+          onchange={handleChangePDF}
+        ></lightning-combobox>
+      </div>
+    </div>
+  </lightning-card>
+</template>
