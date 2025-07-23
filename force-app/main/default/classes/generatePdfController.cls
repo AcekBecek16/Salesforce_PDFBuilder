@@ -25,13 +25,27 @@ public without sharing class generatePdfController {
     }
   }
 
+  @AuraEnabled(cacheable=true)
+  public static List<PDF_Template__c> getPDFTemplates() {
+    try {
+      return [
+        SELECT Id, Name, Body__c, Related_Object__c, Insert_Fields__c
+        FROM PDF_Template__c
+      ];
+    } catch (Exception e) {
+      throw new AuraHandledException(e.getMessage());
+    }
+  }
+
   public static ContentVersion savePdfAttachment(
     String recordId,
-    String CampaignId
+    String CampaignId,
+    String TemplateId
   ) {
     try {
-      PageReference pdfPage = Page.sampleQuoteTemplate; // name of your VF page
-      pdfPage.getParameters().put('campaignMemberId', recordId);
+      PageReference pdfPage = Page.dynamicTemplate; // name of your VF page
+      pdfPage.getParameters().put('templateId', TemplateId);
+      pdfPage.getParameters().put('recordId', recordId);
 
       // Get the PDF blob
       Blob pdfBlob = pdfPage.getContent();
@@ -45,7 +59,7 @@ public without sharing class generatePdfController {
       insert attachment;
 
       ContentVersion cv = new ContentVersion();
-      cv.Title = 'GeneratedPDF_' + DateTime.now().getTime();
+      cv.Title = 'GeneratedPDF_' + DateTime.now().getTime() + '.pdf';
       cv.PathOnClient = 'GeneratedPDF_' + DateTime.now().getTime() + '.pdf';
       cv.VersionData = pdfBlob;
       insert cv;
@@ -57,7 +71,11 @@ public without sharing class generatePdfController {
   }
 
   @AuraEnabled
-  public static void sendEmail(String campaignId, String emailTemplateId) {
+  public static void sendEmail(
+    String campaignId,
+    String emailTemplateId,
+    String pdfTemplateId
+  ) {
     try {
       // Step 1: Get Campaign Members
       List<CampaignMember> members = [
@@ -66,6 +84,12 @@ public without sharing class generatePdfController {
         WHERE CampaignId = :campaignId AND (ContactId != NULL OR LeadId != NULL)
       ];
 
+      OrgWideEmailAddress owd = [
+        SELECT Id, DisplayName
+        FROM OrgWideEmailAddress
+        WHERE DisplayName = 'acek becek'
+        LIMIT 1
+      ];
       // Step 2: Get PDF attachment from ContentVersion
       //   ContentVersion cv = [
       //     SELECT Title, VersionData, FileExtension
@@ -80,7 +104,11 @@ public without sharing class generatePdfController {
       for (CampaignMember cm : members) {
         Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();
 
-        ContentVersion cv = savePdfAttachment(cm.Id, cm.CampaignId);
+        ContentVersion cv = savePdfAttachment(
+          cm.ContactId,
+          cm.CampaignId,
+          pdfTemplateId
+        );
         List<Messaging.EmailFileAttachment> attachments = new List<Messaging.EmailFileAttachment>();
         Messaging.EmailFileAttachment fileAttachment = new Messaging.EmailFileAttachment();
         fileAttachment.setFileName(cv.Title + '.' + cv.FileExtension);
@@ -88,6 +116,8 @@ public without sharing class generatePdfController {
         fileAttachment.setContentType('application/pdf');
         attachments.add(fileAttachment);
 
+        // email.setSenderDisplayName(owd.DisplayName);
+        email.setOrgWideEmailAddressId(owd.Id);
         email.setTemplateId(emailTemplateId);
         email.setTargetObjectId(
           cm.ContactId != null ? cm.ContactId : cm.LeadId

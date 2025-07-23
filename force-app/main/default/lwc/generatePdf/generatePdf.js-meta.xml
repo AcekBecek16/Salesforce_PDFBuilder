@@ -6,6 +6,7 @@
         <target>lightning__RecordAction</target>
         <target>lightning__RecordPage</target>
     </targets>
+    <masterLabel>Send Campaign PDF</masterLabel>
     <targetConfigs>
         <targetConfig targets="lightning__RecordAction">
             <actionType>ScreenAction</actionType>

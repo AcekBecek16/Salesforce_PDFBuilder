@@ -11,7 +11,7 @@ export default class ModalGeneratePDF extends LightningModal {
   body;
 
   get url() {
-    return `/apex/${this.content.pdfTemplateId}?pdfReport=pdf&campaignId=${this.content.recordId}`;
+    return `/apex/dynamicTemplate?templateId=${this.content.pdfTemplateId}&recordId=`;
   }
 
   @wire(getSingleTemplate, { templateId: "$content.templateId" })
@@ -30,29 +30,17 @@ export default class ModalGeneratePDF extends LightningModal {
   }
 
   async handleSendEmail() {
-    await sendEmail({
-      campaignId: this.content.recordId,
-      emailTemplateId: this.content.templateId
-    })
-      .then((result) => {
-        this.dispatchEvent(
-          new ShowToastEvent({
-            title: "Success",
-            message: "Email Succesfully Sent",
-            variant: "success"
-          })
-        );
-        this.close(result);
-      })
-      .catch((error) => {
-        console.error("Email failed", error);
-        this.dispatchEvent(
-          new ShowToastEvent({
-            title: "Error",
-            message: "Email failed to send: " + error.body.message + " ",
-            variant: "error"
-          })
-        );
+    try {
+      await sendEmail({
+        campaignId: this.content.recordId,
+        emailTemplateId: this.content.templateId,
+        pdfTemplateId: this.content.pdfTemplateId
       });
+
+      this.close("success");
+    } catch (error) {
+      console.error("Email failed", error);
+      this.close("error");
+    }
   }
 }

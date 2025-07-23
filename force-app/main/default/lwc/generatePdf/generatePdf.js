@@ -1,6 +1,7 @@
 import { LightningElement, api, track, wire } from "lwc";
 import { CloseActionScreenEvent } from "lightning/actions";
 import getEmailTemplate from "@salesforce/apex/generatePdfController.getEmailTemplate";
+import getPDFTemplates from "@salesforce/apex/generatePdfController.getPDFTemplates";
 import MyModal from "c/modalGeneratePDF";
 import { ShowToastEvent } from "lightning/platformShowToastEvent";
 
@@ -11,9 +12,10 @@ export default class GeneratePdf extends LightningElement {
   @track emailTemplateName;
   @track pdfValue;
   @track templateOptions;
+  @track templatePdfOptions;
 
   get url() {
-    return "/apex/sampleQuoteTemplate?campaignId=" + this.recordId;
+    return "/apex/dynamicTemplate?templateId=" + this.recordId + "&recordId=";
   }
   //   handlePreview() {
   //     console.log(
@@ -47,21 +49,26 @@ export default class GeneratePdf extends LightningElement {
         pdfTemplateId: this.pdfValue
       }
     });
-    // if modal closed with X button, promise returns result = 'undefined'
-    // if modal closed with OK button, promise returns result = 'okay'
-    console.log(result);
+    if (result === "success") {
+      const toast = new ShowToastEvent({
+        title: "Success",
+        message: "Email Succesfully Sent",
+        variant: "success"
+      });
+
+      this.dispatchEvent(toast);
+    } else if (result === "error") {
+      const toast = new ShowToastEvent({
+        title: "Error",
+        message: "Failed to Send Email",
+        variant: "error"
+      });
+
+      this.dispatchEvent(toast);
+    }
   }
   handleCancel(event) {
     this.dispatchEvent(new CloseActionScreenEvent());
-  }
-
-  get templatePdfOptions() {
-    return [
-      {
-        label: "Surat Maintenance",
-        value: "sampleQuoteTemplate"
-      }
-    ];
   }
 
   @wire(getEmailTemplate, { entityName: "$objectApiName" })
@@ -78,6 +85,19 @@ export default class GeneratePdf extends LightningElement {
     }
   }
 
+  @wire(getPDFTemplates)
+  wiredPDFTemplates({ error, data }) {
+    if (data) {
+      this.templatePdfOptions = data.map((item) => {
+        return {
+          label: item.Name,
+          value: item.Id
+        };
+      });
+    } else if (error) {
+      console.error(error);
+    }
+  }
   handleChangeTemplate(event) {
     this.emailValue = event.target.value;
   }

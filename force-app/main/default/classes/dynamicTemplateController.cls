@@ -46,15 +46,20 @@ public with sharing class dynamicTemplateController {
       fields.add('Name');
     }
 
+    String filtered = '';
+    if (!String.isBlank(recordId)) {
+      filtered = ' WHERE Id = \'' + recordId + '\'';
+    }
+
     String objectApiName = template.Related_Object__c;
     String query =
       'SELECT ' +
       String.join(fields, ',') +
       ' FROM ' +
       objectApiName +
-      ' WHERE Id = \'' +
-      recordId +
-      '\'';
+      '' +
+      filtered +
+      ' LIMIT 1';
     System.debug(query);
     record = Database.query(query);
 
