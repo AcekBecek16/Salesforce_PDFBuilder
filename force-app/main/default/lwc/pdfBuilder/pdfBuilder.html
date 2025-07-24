@@ -74,14 +74,26 @@
             </header>
 
             <!-- Body -->
-            <div class="slds-p-around_small slds-modal__content">
-              <lightning-combobox
-                name="mergeFields"
-                label="Select Field"
-                value={selectedField}
-                options={mergeFieldOptions}
-                onchange={handleChangeSelectedField}
-              ></lightning-combobox>
+            <div class="slds-grid slds-p-around_small slds-modal__content">
+              <div class="slds-m-right_small slds-col">
+                <lightning-combobox
+                  name="mergeFields"
+                  label="Select Field"
+                  value={selectedField}
+                  options={mergeFieldOptions}
+                  onchange={handleChangeSelectedField}
+                ></lightning-combobox>
+              </div>
+              <div class="slds-col" if:true={isLookupField}>
+                <lightning-combobox
+                  name="mergeFields"
+                  label="Select Field"
+                  value={selectedLookupField}
+                  options={mergeFieldLookupOptions}
+                  onchange={handleChangeSelectedLookupField}
+                  data-label="lookupfield"
+                ></lightning-combobox>
+              </div>
             </div>
 
             <!-- Footer -->

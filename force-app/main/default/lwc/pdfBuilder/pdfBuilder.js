@@ -22,6 +22,13 @@ export default class PdfBuilder extends LightningElement {
 
   @track dataFieldList = [];
 
+  @track isLookupField = false;
+  @track lookupObject;
+  @track lookupFieldList = [];
+  @track selectedLookupField = "";
+
+  @track mergeFieldLookupOptions = [];
+
   mergeFieldOptions = [];
   showModal = false;
 
@@ -63,7 +70,7 @@ export default class PdfBuilder extends LightningElement {
             field.EntityDefinition?.QualifiedApiName || "Unknown";
           const fieldName = field.QualifiedApiName;
           const fieldLabel = field.Label;
-          const value = `Record.${fieldName}`;
+          const value = `${fieldName}`;
           //   const value = `${objectName}.${fieldName}`;
           const label = `${objectName} - ${fieldLabel}`;
           return { label, value };
@@ -172,10 +179,13 @@ export default class PdfBuilder extends LightningElement {
   handleInsertField() {
     if (!this.content) return;
 
-    const fieldValue = `{!${this.selectedField}}`;
+    const fieldValue = `${this.isLookupField ? this.selectedLookupField : this.selectedField}`;
 
     // Replace cursor placeholder with merge field
-    const updatedContent = this.content.replace("{{cursor}}", fieldValue);
+    const updatedContent = this.content.replace(
+      "{{cursor}}",
+      `{!Record.${this.isLookupField ? this.lookupObject + "." + fieldValue : fieldValue}}`
+    );
 
     this.content = updatedContent;
 
@@ -186,8 +196,7 @@ export default class PdfBuilder extends LightningElement {
     }
 
     const fillteredFields = this.dataFieldList.filter(
-      (fields) =>
-        fields.QualifiedApiName === this.selectedField.replace("Record.", "")
+      (fields) => fields.QualifiedApiName === fieldValue.replace("Record.", "")
     );
     // console.log(JSON.stringify(fillteredFields, false, 2));
 
@@ -195,13 +204,19 @@ export default class PdfBuilder extends LightningElement {
       ...this.insertMergeFields,
       ...fillteredFields.map((item) => {
         return {
-          fieldName: item.QualifiedApiName,
+          fieldName: this.isLookupField
+            ? this.lookupObject + "." + item.QualifiedApiName
+            : item.QualifiedApiName,
           fieldType: item.ValueType.DeveloperName
         };
       })
     ];
+    console.log(JSON.stringify(this.insertMergeFields, false, 2));
     this.closeModal();
-    // console.log(JSON.stringify(this.insertMergeFields, false, 2));
+
+    this.selectedField = "";
+    this.selectedLookupField = "";
+    this.isLookupField = false;
   }
 
   handleMarkCursor() {
@@ -227,9 +242,47 @@ export default class PdfBuilder extends LightningElement {
       }
     }
   }
-  handleChangeSelectedField() {
-    this.selectedField =
+  async handleChangeSelectedField() {
+    const fieldSelectedValue =
       this.template.querySelector("lightning-combobox").value;
+
+    const fillteredFields = this.dataFieldList.filter(
+      (fields) =>
+        fields.QualifiedApiName === fieldSelectedValue.replace("Record.", "")
+    );
+    console.log(JSON.stringify(fillteredFields, false, 2));
+    console.log(fillteredFields[0].DataType);
+    const dataType = fillteredFields[0].DataType;
+    // Check if it's a lookup field and extract the object name
+    const lookupMatch = dataType.match(/^Lookup\((\w+)\)$/);
+
+    if (lookupMatch) {
+      this.isLookupField = true;
+      this.lookupObject = lookupMatch[1]; // This will be "Account" in your example
+      console.log("Lookup object:", this.lookupObject);
+      await getFieldList({ SObjectName: this.lookupObject }).then((result) => {
+        this.lookupFieldList = result;
+        this.mergeFieldLookupOptions = result.map((field) => {
+          const objectName =
+            field.EntityDefinition?.QualifiedApiName || "Unknown";
+          const fieldName = field.QualifiedApiName;
+          const fieldLabel = field.Label;
+          const value = `${fieldName}`;
+          const label = `${objectName} - ${fieldLabel}`;
+          return { label, value };
+        });
+      });
+    } else {
+      this.isLookupField = false;
+      this.lookupObject = null;
+      this.selectedField = fieldSelectedValue;
+    }
+  }
+
+  handleChangeSelectedLookupField() {
+    this.selectedLookupField = this.template.querySelector(
+      'lightning-combobox[data-label="lookupfield"]'
+    ).value;
   }
 
   handleOpenModal() {
