@@ -1,37 +1,110 @@
 <template>
-  <div class="search-container">
+  <div class="slds-form-element">
     <template if:false={selectedRecord}>
-      <lightning-input
-        label="Search"
-        value={searchTerm}
-        onchange={handleInput}
-        placeholder="Type to search..."
-      ></lightning-input>
+      <div class="slds-form-element__control">
+        <lightning-input
+          label="Search Records"
+          value={searchTerm}
+          onchange={handleInput}
+          placeholder="Type to search records..."
+          variant="label-stacked"
+          class="slds-m-bottom_x-small"
+        ></lightning-input>
+      </div>
+
+      <template if:true={isLoading}>
+        <div class="slds-m-top_small slds-is-relative">
+          <lightning-spinner
+            alternative-text="Loading"
+            size="small"
+            variant="brand"
+          ></lightning-spinner>
+        </div>
+      </template>
 
       <template if:true={results}>
-        <ul class="results-list">
-          <template for:each={results} for:item="record">
-            <li
-              key={record.Id}
-              class="result-item"
-              data-id={record.Id}
-              onclick={handleSelect}
-            >
-              {record.displayLabel}
-            </li>
-          </template>
-        </ul>
+        <div
+          class="slds-m-top_none slds-dropdown slds-dropdown_left slds-dropdown Length-7"
+          style="display: block"
+        >
+          <ul class="slds-dropdown__list" role="menu">
+            <template for:each={results} for:item="record">
+              <li
+                key={record.Id}
+                class="slds-dropdown__item"
+                role="presentation"
+              >
+                <a
+                  class="slds-has-flexi-truncate slds-media slds-media_center"
+                  href="javascript:void(0)"
+                  role="menuitem"
+                  data-id={record.Id}
+                  onclick={handleSelect}
+                >
+                  <div class="slds-media__body">
+                    <span class="slds-truncate" title={record.displayLabel}>
+                      {record.displayLabel}
+                    </span>
+                  </div>
+                </a>
+              </li>
+            </template>
+          </ul>
+        </div>
       </template>
 
       <template if:true={noResults}>
-        <div class="no-results">No records found.</div>
+        <div class="slds-m-top_small slds-box slds-theme_shade">
+          <p
+            class="slds-text-align_center slds-text-body_regular slds-text-color_weak"
+          >
+            <lightning-icon
+              icon-name="utility:search"
+              size="small"
+              class="slds-m-right_x-small"
+            ></lightning-icon>
+            No records found matching your search
+          </p>
+        </div>
       </template>
     </template>
 
     <template if:true={selectedRecord}>
-      <div class="slds-m-top_medium selected-record">
-        <span class="record-label">{selectedRecord.displayLabel}</span>
-        <button class="clear-btn" onclick={clearSelection}>×</button>
+      <div class="slds-form-element__control">
+        <div class="slds-pill_container">
+          <div class="slds-pill slds-pill_link">
+            <a
+              href="javascript:void(0)"
+              class="slds-pill__action"
+              title={selectedRecord.displayLabel}
+            >
+              <span class="slds-pill__label"
+                >{selectedRecord.displayLabel}</span
+              >
+            </a>
+            <button
+              class="slds-button slds-button_icon slds-pill__remove"
+              title="Remove selected record"
+              onclick={clearSelection}
+            >
+              <lightning-icon
+                icon-name="utility:close"
+                size="xx-small"
+              ></lightning-icon>
+              <span class="slds-assistive-text">Remove</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="slds-m-top_x-small">
+        <lightning-button
+          label="Change Record"
+          variant="base"
+          onclick={clearSelection}
+          icon-name="utility:refresh"
+          class="slds-text-link slds-button_reset"
+        ></lightning-button>
       </div>
     </template>
   </div>

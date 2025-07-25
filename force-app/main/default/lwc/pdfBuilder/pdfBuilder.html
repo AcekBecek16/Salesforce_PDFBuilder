@@ -1,120 +1,234 @@
 <template>
-  <lightning-card variant="base">
-    <div slot="title">PDF Builder</div>
-    <div slot="actions">
-      <lightning-button
-        variant="brand"
-        class="slds-m-left_x-small"
-        label="Preview"
-        onclick={handlePreview}
-      ></lightning-button>
-      <lightning-button
-        variant="brand"
-        class="slds-m-left_x-small"
-        label="Save"
-        onclick={handleSave}
-      ></lightning-button>
+  <article class="slds-card slds-card_boundary">
+    <!-- Card Header with improved styling -->
+    <div class="slds-grid slds-grid_vertical-align-center slds-card__header">
+      <header class="slds-has-flexi-truncate slds-media slds-media_center">
+        <div class="slds-media__figure">
+          <lightning-icon
+            icon-name="doctype:pdf"
+            alternative-text="PDF"
+            size="small"
+          ></lightning-icon>
+        </div>
+        <div class="slds-media__body">
+          <h2 class="slds-card__header-title">
+            <span>PDF Builder</span>
+          </h2>
+        </div>
+      </header>
+      <div class="slds-no-flex">
+        <div class="slds-button-group" role="group">
+          <lightning-button
+            variant="brand"
+            label="Preview"
+            onclick={handlePreview}
+            class="slds-m-left_x-small"
+          ></lightning-button>
+          <lightning-button
+            variant="brand"
+            label="Save"
+            onclick={handleSave}
+            class="slds-m-left_x-small"
+          ></lightning-button>
+        </div>
+      </div>
     </div>
-    <div slot="footer"></div>
 
-    <div class="slds-m-around_small">
-      <div class="slds-m-bottom_small slds-grid">
-        <div class="slds-m-right_small slds-col">
-          <lightning-record-edit-form
-            density="compact"
-            object-api-name="PDF_Template__c"
-            record-id={recordId}
-          >
-            <lightning-input-field
-              field-name="Related_Object__c"
-              variant="standard"
-              onchange={onChangeObjects}
-              value={selectedObject}
-            ></lightning-input-field>
-          </lightning-record-edit-form>
+    <!-- Card Body with improved layout -->
+    <div class="slds-card__body slds-card__body_inner">
+      <!-- Configuration Section -->
+      <div class="slds-m-bottom_medium slds-grid slds-gutters slds-wrap">
+        <div class="slds-col slds-size_12-of-12 slds-medium-size_6-of-12">
+          <div class="slds-form slds-form_stacked">
+            <lightning-record-edit-form
+              density="compact"
+              object-api-name="PDF_Template__c"
+              record-id={recordId}
+            >
+              <div class="slds-form-element">
+                <div class="slds-form-element__control">
+                  <lightning-input-field
+                    field-name="Related_Object__c"
+                    variant="label-stacked"
+                    onchange={onChangeObjects}
+                    value={selectedObject}
+                  ></lightning-input-field>
+                </div>
+              </div>
+            </lightning-record-edit-form>
+          </div>
         </div>
-        <div class="slds-col">
-          <c-dynamic-search
-            selected-object={selectedObject}
-            search-field="Name"
-            onrecordselect={handleRecord}
-          ></c-dynamic-search>
-        </div>
-      </div>
-      <div class="">
-        <lightning-input-rich-text
-          placeholder="Type something"
-          formats={allowedFormats}
-          onchange={handleTextChange}
-          value={content}
-        ></lightning-input-rich-text>
-
-        <div class="slds-m-top_x-small slds-text-align_right">
-          <button
-            class="slds-button slds-button_neutral"
-            onclick={handleOpenModal}
-          >
-            <lightning-icon
-              icon-name="utility:merge_field"
-              alternative-text="Insert Merge Field"
-              size="x-small"
-              class="slds-m-right_x-small"
-            ></lightning-icon>
-            Insert Merge Field
-          </button>
+        <div class="slds-col slds-size_12-of-12 slds-medium-size_6-of-12">
+          <div class="slds-form slds-form_stacked">
+            <div class="slds-form-element">
+              <div class="slds-form-element__control">
+                <c-dynamic-search
+                  selected-object={selectedObject}
+                  search-field="Name"
+                  onrecordselect={handleRecord}
+                ></c-dynamic-search>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-      <!-- Modal -->
-      <template if:true={showModal}>
-        <section role="dialog" class="slds-modal slds-fade-in-open">
-          <div class="slds-modal__container">
-            <!-- Header -->
-            <header class="slds-modal__header">
-              <h2 class="slds-modal__title">Insert Merge Field</h2>
-            </header>
 
-            <!-- Body -->
-            <div class="slds-grid slds-p-around_small slds-modal__content">
-              <div class="slds-m-right_small slds-col">
+      <!-- Editor Section -->
+      <div class="slds-box slds-box_x-small slds-theme_default">
+        <div class="slds-form-element">
+          <label class="slds-text-heading_small slds-form-element__label">
+            <span class="slds-required">*</span>Template Content
+          </label>
+          <div class="slds-form-element__control">
+            <lightning-input-rich-text
+              placeholder="Start typing your PDF template content..."
+              formats={allowedFormats}
+              onchange={handleTextChange}
+              value={content}
+              class="slds-rich-text-editor__output"
+            ></lightning-input-rich-text>
+          </div>
+        </div>
+
+        <!-- Insert Field Button -->
+        <div class="slds-m-top_small slds-grid slds-grid_align-end">
+          <div>
+            <button
+              class="slds-button slds-button_neutral slds-button_neutral-alt"
+              onclick={handleOpenModal}
+              title="Insert merge fields from your selected object"
+            >
+              <lightning-icon
+                icon-name="utility:merge_field"
+                alternative-text="Insert Merge Field"
+                size="x-small"
+                class="slds-m-right_x-small"
+              ></lightning-icon>
+              Insert Merge Field
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card Footer -->
+    <footer class="slds-grid slds-grid_align-spread slds-card__footer">
+      <div class="slds-col">
+        <span class="slds-text-body_small slds-text-color_weak"
+          >PDF Template Builder</span
+        >
+      </div>
+      <div class="slds-text-align_right slds-col">
+        <span class="slds-text-body_small slds-text-color_weak"
+          >Ready to build</span
+        >
+      </div>
+    </footer>
+
+    <!-- Improved Modal with SLDS best practices -->
+    <template if:true={showModal}>
+      <section
+        role="dialog"
+        tabindex="-1"
+        aria-labelledby="modal-heading-01"
+        aria-modal="true"
+        class="slds-modal slds-fade-in-open slds-modal_medium"
+      >
+        <div class="slds-modal__container">
+          <!-- Modal Header -->
+          <header class="slds-modal__header slds-theme_shade">
+            <button
+              class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse"
+              title="Close"
+              onclick={closeModal}
+            >
+              <lightning-icon
+                icon-name="utility:close"
+                alternative-text="Close"
+                size="small"
+              ></lightning-icon>
+              <span class="slds-assistive-text">Close</span>
+            </button>
+            <h2
+              class="slds-text-heading_medium slds-hyphenate"
+              id="modal-heading-01"
+            >
+              Insert Merge Field
+            </h2>
+            <p class="slds-m-top_x-small">
+              Select fields to insert into your template
+            </p>
+          </header>
+
+          <!-- Modal Body -->
+          <div class="slds-p-around_medium slds-modal__content">
+            <div class="slds-grid slds-gutters slds-wrap">
+              <div class="slds-col slds-size_12-of-12 slds-medium-size_6-of-12">
                 <lightning-combobox
                   name="mergeFields"
-                  label="Select Field"
+                  label="Available Fields"
                   value={selectedField}
                   options={mergeFieldOptions}
                   onchange={handleChangeSelectedField}
+                  placeholder="Select a field"
+                  variant="label-stacked"
                 ></lightning-combobox>
               </div>
-              <div class="slds-col" if:true={isLookupField}>
-                <lightning-combobox
-                  name="mergeFields"
-                  label="Select Field"
-                  value={selectedLookupField}
-                  options={mergeFieldLookupOptions}
-                  onchange={handleChangeSelectedLookupField}
-                  data-label="lookupfield"
-                ></lightning-combobox>
-              </div>
+              <template if:true={isLookupField}>
+                <div
+                  class="slds-col slds-size_12-of-12 slds-medium-size_6-of-12"
+                >
+                  <lightning-combobox
+                    name="mergeFields"
+                    label="Lookup Properties"
+                    value={selectedLookupField}
+                    options={mergeFieldLookupOptions}
+                    onchange={handleChangeSelectedLookupField}
+                    placeholder="Select property"
+                    variant="label-stacked"
+                    data-label="lookupfield"
+                  ></lightning-combobox>
+                </div>
+              </template>
             </div>
 
-            <!-- Footer -->
-            <footer class="slds-modal__footer">
-              <lightning-button
-                variant="neutral"
-                label="Cancel"
-                class="slds-m-right_x-small"
-                onclick={closeModal}
-              ></lightning-button>
-              <lightning-button
-                label="Insert Text"
-                variant="brand"
-                onclick={handleInsertField}
-              >
-              </lightning-button>
-            </footer>
+            <!-- Preview Section -->
+            <template if:true={selectedField}>
+              <div class="slds-m-top_medium slds-box slds-theme_info">
+                <h3 class="slds-m-bottom_x-small slds-text-heading_small">
+                  Preview
+                </h3>
+                <p class="slds-text-body_regular">
+                  This will insert: <code>{selectedField}</code>
+                </p>
+                <template if:true={isLookupField}>
+                  <p class="slds-m-top_xx-small slds-text-body_regular">
+                    With lookup property:
+                    <code>{selectedField.selectedLookupField}</code>
+                  </p>
+                </template>
+              </div>
+            </template>
           </div>
-        </section>
-        <div class="slds-backdrop slds-backdrop_open"></div>
-      </template>
-    </div>
-  </lightning-card>
+
+          <!-- Modal Footer -->
+          <footer class="slds-modal__footer">
+            <lightning-button
+              variant="neutral"
+              label="Cancel"
+              onclick={closeModal}
+              class="slds-m-right_x-small"
+            ></lightning-button>
+            <lightning-button
+              label="Insert Field"
+              variant="brand"
+              onclick={handleInsertField}
+              disabled={isInsertDisabled}
+            ></lightning-button>
+          </footer>
+        </div>
+      </section>
+      <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+  </article>
 </template>

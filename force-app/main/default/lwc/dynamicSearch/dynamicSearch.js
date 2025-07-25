@@ -10,7 +10,7 @@ export default class DynamicSearch extends LightningElement {
 
   @track searchTerm = "";
   @track selectedRecord = null;
-  @track results = [];
+  @track results;
 
   async search() {
     try {

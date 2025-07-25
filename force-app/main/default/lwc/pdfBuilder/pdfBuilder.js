@@ -62,7 +62,7 @@ export default class PdfBuilder extends LightningElement {
   }
 
   async callFieldObject() {
-    await getFieldList({ SObjectName: this.selectedObject })
+    await getFieldList({ sObjectName: this.selectedObject })
       .then((result) => {
         this.dataFieldList = result;
         this.mergeFieldOptions = result.map((field) => {
@@ -260,7 +260,7 @@ export default class PdfBuilder extends LightningElement {
       this.isLookupField = true;
       this.lookupObject = lookupMatch[1]; // This will be "Account" in your example
       console.log("Lookup object:", this.lookupObject);
-      await getFieldList({ SObjectName: this.lookupObject }).then((result) => {
+      await getFieldList({ sObjectName: this.lookupObject }).then((result) => {
         this.lookupFieldList = result;
         this.mergeFieldLookupOptions = result.map((field) => {
           const objectName =
