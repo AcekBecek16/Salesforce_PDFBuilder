@@ -3,6 +3,7 @@ import LightningModal from "lightning/modal";
 import getSingleTemplate from "@salesforce/apex/generatePdfController.getSingleTemplate";
 // import savePdfAttachment from "@salesforce/apex/generatePdfController.savePdfAttachment";
 import sendEmail from "@salesforce/apex/generatePdfController.sendEmail";
+import sendEmailNotification from "@salesforce/apex/generatePdfController.sendEmailNotification";
 import { ShowToastEvent } from "lightning/platformShowToastEvent";
 
 export default class ModalGeneratePDF extends LightningModal {
@@ -31,11 +32,19 @@ export default class ModalGeneratePDF extends LightningModal {
 
   async handleSendEmail() {
     try {
-      await sendEmail({
-        campaignId: this.content.recordId,
-        emailTemplateId: this.content.templateId,
-        pdfTemplateId: this.content.pdfTemplateId
-      });
+      if (this.content.objectApiName === "Mass_Notification__c") {
+        await sendEmailNotification({
+          recordId: this.content.recordId,
+          emailTemplateId: this.content.templateId,
+          pdfTemplateId: this.content.pdfTemplateId
+        });
+      } else {
+        await sendEmail({
+          campaignId: this.content.recordId,
+          emailTemplateId: this.content.templateId,
+          pdfTemplateId: this.content.pdfTemplateId
+        });
+      }
 
       this.close("success");
     } catch (error) {

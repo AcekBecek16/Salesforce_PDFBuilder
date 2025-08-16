@@ -24,6 +24,7 @@ export default class PdfBuilder extends LightningElement {
 
   @track isLookupField = false;
   @track lookupObject;
+  @track lookupFieldApiName;
   @track lookupFieldList = [];
   @track selectedLookupField = "";
 
@@ -184,7 +185,7 @@ export default class PdfBuilder extends LightningElement {
     // Replace cursor placeholder with merge field
     const updatedContent = this.content.replace(
       "{{cursor}}",
-      `{!Record.${this.isLookupField ? this.lookupObject + "." + fieldValue : fieldValue}}`
+      `{!Record.${this.isLookupField ? this.lookupFieldApiName + "." + fieldValue : fieldValue}}`
     );
 
     this.content = updatedContent;
@@ -198,14 +199,25 @@ export default class PdfBuilder extends LightningElement {
     const fillteredFields = this.dataFieldList.filter(
       (fields) => fields.QualifiedApiName === fieldValue.replace("Record.", "")
     );
-    // console.log(JSON.stringify(fillteredFields, false, 2));
+    const fillteredLookupFields = this.lookupFieldList.filter(
+      (fields) => fields.QualifiedApiName === this.selectedLookupField
+    );
+    console.log(JSON.stringify(fillteredLookupFields, false, 2));
 
     this.insertMergeFields = [
       ...this.insertMergeFields,
       ...fillteredFields.map((item) => {
         return {
           fieldName: this.isLookupField
-            ? this.lookupObject + "." + item.QualifiedApiName
+            ? this.lookupFieldApiName + "." + item.QualifiedApiName
+            : item.QualifiedApiName,
+          fieldType: item.ValueType.DeveloperName
+        };
+      }),
+      ...fillteredLookupFields.map((item) => {
+        return {
+          fieldName: this.isLookupField
+            ? this.lookupFieldApiName + "." + item.QualifiedApiName
             : item.QualifiedApiName,
           fieldType: item.ValueType.DeveloperName
         };
@@ -252,11 +264,19 @@ export default class PdfBuilder extends LightningElement {
     );
     console.log(JSON.stringify(fillteredFields, false, 2));
     console.log(fillteredFields[0].DataType);
+    console.log(fillteredFields[0].QualifiedApiName);
+
     const dataType = fillteredFields[0].DataType;
     // Check if it's a lookup field and extract the object name
     const lookupMatch = dataType.match(/^Lookup\((\w+)\)$/);
+    const masterDetailMatch = dataType.match(/^Master\-Detail\((\w+)\)$/);
 
-    if (lookupMatch) {
+    if (lookupMatch || masterDetailMatch) {
+      this.lookupFieldApiName = fillteredFields[0].QualifiedApiName.replace(
+        "__c",
+        "__r"
+      );
+
       this.isLookupField = true;
       this.lookupObject = lookupMatch[1]; // This will be "Account" in your example
       console.log("Lookup object:", this.lookupObject);
@@ -283,6 +303,8 @@ export default class PdfBuilder extends LightningElement {
     this.selectedLookupField = this.template.querySelector(
       'lightning-combobox[data-label="lookupfield"]'
     ).value;
+
+    console.log("Selected Lookup Field:", this.selectedLookupField);
   }
 
   handleOpenModal() {

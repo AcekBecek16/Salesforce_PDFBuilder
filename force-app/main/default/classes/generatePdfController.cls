@@ -5,7 +5,7 @@ public without sharing class generatePdfController {
       return [
         SELECT Id, Name, RelatedEntityType
         FROM EmailTemplate
-        WHERE RelatedEntityType = :entityName
+        // WHERE RelatedEntityType = :entityName
       ];
     } catch (Exception e) {
       throw new AuraHandledException(e.getMessage());
@@ -71,43 +71,216 @@ public without sharing class generatePdfController {
   }
 
   @AuraEnabled
+  public static void sendEmailNotification(
+    String recordId,
+    String emailTemplateId,
+    String pdfTemplateId
+  ) {
+    try {
+      List<List_Konsumen__c> members = [
+        SELECT
+          Id,
+          Mass_Notification__c,
+          Account__c,
+          Account__r.Name,
+          Account__r.Contact_Name__r.Email
+        FROM List_Konsumen__c
+        WHERE Mass_Notification__c = :recordId
+      ];
+
+      if (!members.isEmpty()) {
+        List<wrapperRecipient> recipients = new List<wrapperRecipient>();
+
+        for (List_Konsumen__c cm : members) {
+          if (cm.Account__c != null) {
+            recipients.add(
+              new wrapperRecipient(
+                cm.Id,
+                cm.Account__r.Contact_Name__r.Email,
+                cm.Account__c,
+                'List_Konsumen__c',
+                pdfTemplateId,
+                emailTemplateId
+              )
+            );
+          }
+        }
+
+        sendEmailhandler(recipients);
+      }
+
+      //   OrgWideEmailAddress owd = [
+      //     SELECT Id, DisplayName
+      //     FROM OrgWideEmailAddress
+      //     WHERE DisplayName = 'No-Reply Cikarang Listrindo'
+      //     LIMIT 1
+      //   ];
+
+      //   List<Messaging.SingleEmailMessage> emails = new List<Messaging.SingleEmailMessage>();
+
+      //   for (List_Konsumen__c cm : members) {
+      //     Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();
+
+      //     ContentVersion cv = savePdfAttachment(cm.Id, cm.Id, pdfTemplateId);
+      //     List<Messaging.EmailFileAttachment> attachments = new List<Messaging.EmailFileAttachment>();
+      //     Messaging.EmailFileAttachment fileAttachment = new Messaging.EmailFileAttachment();
+      //     fileAttachment.setFileName(cv.Title + '.' + cv.FileExtension);
+      //     fileAttachment.setBody(cv.VersionData);
+      //     fileAttachment.setContentType('application/pdf');
+      //     attachments.add(fileAttachment);
+
+      //     email.setOrgWideEmailAddressId(owd.Id);
+      //     email.setTemplateId(emailTemplateId);
+      //     email.setTargetObjectId(cm.Id);
+      //     email.setSaveAsActivity(true);
+      //     email.setFileAttachments(attachments);
+      //     email.setWhatId(cm.Id);
+      //     emails.add(email);
+      //   }
+
+      //   if (!emails.isEmpty()) {
+      //     Messaging.sendEmail(emails, false); // false = don’t use AllOrNothing
+      //   }
+    } catch (Exception e) {
+      throw new AuraHandledException(e.getMessage());
+    }
+  }
+
+  @AuraEnabled
   public static void sendEmail(
     String campaignId,
     String emailTemplateId,
     String pdfTemplateId
   ) {
     try {
-      // Step 1: Get Campaign Members
       List<CampaignMember> members = [
         SELECT ContactId, LeadId, CampaignId, Id
         FROM CampaignMember
         WHERE CampaignId = :campaignId AND (ContactId != NULL OR LeadId != NULL)
       ];
 
-      OrgWideEmailAddress owd = [
-        SELECT Id, DisplayName
-        FROM OrgWideEmailAddress
-        WHERE DisplayName = 'acek becek'
-        LIMIT 1
-      ];
-      // Step 2: Get PDF attachment from ContentVersion
-      //   ContentVersion cv = [
-      //     SELECT Title, VersionData, FileExtension
-      //     FROM ContentVersion
-      //     WHERE Id = :contentVersionId
+      System.debug('Campaign Members: ' + members);
+
+      if (!members.isEmpty()) {
+        List<wrapperRecipient> recipients = new List<wrapperRecipient>();
+
+        for (CampaignMember cm : members) {
+          String targetId = cm.ContactId != null ? cm.ContactId : cm.LeadId;
+          if (targetId != null) {
+            recipients.add(
+              new wrapperRecipient(
+                campaignId,
+                '',
+                targetId,
+                'CampaignMember',
+                pdfTemplateId,
+                emailTemplateId
+              )
+            );
+          }
+        }
+
+        sendEmailhandler(recipients);
+      }
+      //   OrgWideEmailAddress owd = [
+      //     SELECT Id, DisplayName
+      //     FROM OrgWideEmailAddress
+      //     WHERE DisplayName = 'No-Reply Cikarang Listrindo'
       //     LIMIT 1
       //   ];
 
-      // Step 3: Prepare and send emails
+      //   List<Messaging.SingleEmailMessage> emails = new List<Messaging.SingleEmailMessage>();
+
+      //   for (CampaignMember cm : members) {
+      //     Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();
+
+      //     ContentVersion cv = savePdfAttachment(
+      //       cm.ContactId,
+      //       cm.CampaignId,
+      //       pdfTemplateId
+      //     );
+      //     List<Messaging.EmailFileAttachment> attachments = new List<Messaging.EmailFileAttachment>();
+      //     Messaging.EmailFileAttachment fileAttachment = new Messaging.EmailFileAttachment();
+      //     fileAttachment.setFileName(cv.Title + '.' + cv.FileExtension);
+      //     fileAttachment.setBody(cv.VersionData);
+      //     fileAttachment.setContentType('application/pdf');
+      //     attachments.add(fileAttachment);
+
+      //     email.setOrgWideEmailAddressId(owd.Id);
+      //     email.setTemplateId(emailTemplateId);
+      //     email.setTargetObjectId(
+      //       cm.ContactId != null ? cm.ContactId : cm.LeadId
+      //     );
+      //     email.setSaveAsActivity(true);
+      //     email.setFileAttachments(attachments);
+      //     email.setWhatId(campaignId);
+      //     emails.add(email);
+      //   }
+
+      //   if (!emails.isEmpty()) {
+      //     Messaging.SendEmailResult[] results = Messaging.sendEmail(
+      //       emails,
+      //       false
+      //     ); // false = don’t use AllOrNothing
+      //     for (Integer i = 0; i < results.size(); i++) {
+      //       Messaging.SendEmailResult result = results[i];
+
+      //       if (result.isSuccess()) {
+      //         System.debug('Email ' + i + ' sent successfully');
+      //       } else {
+      //         System.debug(
+      //           'Email ' + i + ' failed: ' + result.getErrors()[0].getMessage()
+      //         );
+      //       }
+      //     }
+      //   }
+    } catch (Exception e) {
+      throw new AuraHandledException(e.getMessage());
+    }
+  }
+
+  private class wrapperRecipient {
+    public String parentId { get; set; }
+    public String emailTarget { get; set; }
+    public String targetId { get; set; }
+    public String objectApiName { get; set; }
+    public String pdfTemplateId { get; set; }
+    public String emailTemplateId { get; set; }
+
+    public wrapperRecipient(
+      String parentId,
+      String emailTarget,
+      String targetId,
+      String objectApiName,
+      String pdfTemplateId,
+      String emailTemplateId
+    ) {
+      this.parentId = parentId;
+      this.emailTarget = emailTarget;
+      this.targetId = targetId;
+      this.objectApiName = objectApiName;
+      this.pdfTemplateId = pdfTemplateId;
+      this.emailTemplateId = emailTemplateId;
+    }
+  }
+
+  private static void sendEmailhandler(List<wrapperRecipient> members) {
+    try {
+      OrgWideEmailAddress owd = [
+        SELECT Id, DisplayName
+        FROM OrgWideEmailAddress
+        WHERE DisplayName = 'No-Reply Cikarang Listrindo'
+        LIMIT 1
+      ];
       List<Messaging.SingleEmailMessage> emails = new List<Messaging.SingleEmailMessage>();
 
-      for (CampaignMember cm : members) {
+      for (wrapperRecipient member : members) {
         Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();
 
         ContentVersion cv = savePdfAttachment(
-          cm.ContactId,
-          cm.CampaignId,
-          pdfTemplateId
+          member.targetId,
+          member.parentId,
+          member.pdfTemplateId
         );
         List<Messaging.EmailFileAttachment> attachments = new List<Messaging.EmailFileAttachment>();
         Messaging.EmailFileAttachment fileAttachment = new Messaging.EmailFileAttachment();
@@ -116,23 +289,34 @@ public without sharing class generatePdfController {
         fileAttachment.setContentType('application/pdf');
         attachments.add(fileAttachment);
 
-        // email.setSenderDisplayName(owd.DisplayName);
         email.setOrgWideEmailAddressId(owd.Id);
-        email.setTemplateId(emailTemplateId);
-        email.setTargetObjectId(
-          cm.ContactId != null ? cm.ContactId : cm.LeadId
-        );
+        email.setTemplateId(member.emailTemplateId);
+        email.setTargetObjectId(member.targetId);
         email.setSaveAsActivity(true);
         email.setFileAttachments(attachments);
-        email.setWhatId(campaignId); // Optional: links template merge fields
+        email.setWhatId(member.parentId);
         emails.add(email);
       }
 
       if (!emails.isEmpty()) {
-        Messaging.sendEmail(emails, false); // false = don’t use AllOrNothing
+        Messaging.SendEmailResult[] results = Messaging.sendEmail(
+          emails,
+          false
+        ); // false = don’t use AllOrNothing
+        for (Integer i = 0; i < results.size(); i++) {
+          Messaging.SendEmailResult result = results[i];
+
+          if (result.isSuccess()) {
+            System.debug('Email ' + i + ' sent successfully');
+          } else {
+            System.debug(
+              'Email ' + i + ' failed: ' + result.getErrors()[0].getMessage()
+            );
+          }
+        }
       }
     } catch (Exception e) {
-      throw new AuraHandledException(e.getMessage());
+      System.debug(e.getMessage());
     }
   }
 }

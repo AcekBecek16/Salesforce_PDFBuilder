@@ -117,26 +117,88 @@ public with sharing class dynamicTemplateController {
     Map<String, Object> fieldMap = (Map<String, Object>) JSON.deserializeUntyped(
       JSON.serialize(record.getPopulatedFieldsAsMap())
     );
+    // System.debug(
+    //   'Serialize: ' + JSON.serialize(record.getPopulatedFieldsAsMap())
+    // );
     return replaceMergeFields(body, fieldMap);
   }
 
   private String replaceMergeFields(String body, Map<String, Object> fieldMap) {
     Pattern p = Pattern.compile('\\{!Record\\.([a-zA-Z0-9_\\.]+)\\}');
     Matcher m = p.matcher(body);
-
     while (m.find()) {
-      String fullToken = m.group(0); // e.g., {!Record.Contact__r.Name}
-      String token = m.group(1); // e.g., Contact__r.Name
-      String value = getFieldValueFromMap(token, fieldMap);
-
+      String fullToken = m.group(0);
+      String token = m.group(1);
+      Object value = getFieldValueFromMap(token, fieldMap);
       if (value == null) {
         value = '';
+      } else if (value instanceof Datetime) {
+        value = convertToIndonesianDate((Datetime) value);
+      } else if (value instanceof String) {
+        String stringValue = (String) value;
+        if (isValidISODate(stringValue)) {
+          try {
+            Datetime dt = convertISOToDate(stringValue);
+            value = convertToIndonesianDate(dt);
+          } catch (Exception e) {
+            // Keep original value if parsing fails
+          }
+        }
       }
-
-      body = body.replace(fullToken, value); // Safely replace full token
+      System.debug(
+        'Replacing token: ' +
+          fullToken +
+          ' with value: ' +
+          String.valueOf(value)
+      );
+      body = body.replace(fullToken, String.valueOf(value));
     }
-
     return body;
+  }
+
+  private Datetime convertISOToDate(String isoDateString) {
+    // Remove the 'Z' and parse manually, or use JSON deserialization
+    try {
+      // Method 1: JSON deserialization (most reliable)
+      return (Datetime) JSON.deserialize(
+        '"' + isoDateString + '"',
+        Datetime.class
+      );
+    } catch (Exception e) {
+      // Fallback: manual parsing
+      return parseISODateManually(isoDateString);
+    }
+  }
+
+  private Datetime parseISODateManually(String isoDateString) {
+    // Remove the 'Z' at the end
+    String cleanDate = isoDateString.replace('Z', '');
+    // Parse the components
+    List<String> dateParts = cleanDate.split('T');
+    List<String> dateComponent = dateParts[0].split('-');
+    List<String> timeComponent = dateParts[1].split(':');
+    List<String> secondsComponent = timeComponent[2].split('\\.');
+
+    Integer year = Integer.valueOf(dateComponent[0]);
+    Integer month = Integer.valueOf(dateComponent[1]);
+    Integer day = Integer.valueOf(dateComponent[2]);
+    Integer hour = Integer.valueOf(timeComponent[0]);
+    Integer minute = Integer.valueOf(timeComponent[1]);
+    Integer second = Integer.valueOf(secondsComponent[0]);
+
+    return Datetime.newInstance(year, month, day, hour, minute, second);
+  }
+
+  private String convertToIndonesianDate(Datetime dt) {
+    Integer day = Integer.valueOf(dt.format('dd'));
+    String month = dt.format('MMMM');
+    Integer year = Integer.valueOf(dt.format('yyyy'));
+    String timeStr = dt.format('HH:mm');
+    return 'tanggal ' + day + ' ' + month + ' ' + year + ', pukul ' + timeStr;
+  }
+
+  private Boolean isValidISODate(String dateStr) {
+    return dateStr != null && dateStr.contains('T') && dateStr.endsWith('Z');
   }
 
   private String getFieldValueFromMap(String token, Map<String, Object> mapp) {

@@ -27,7 +27,8 @@ export default class GeneratePdf extends LightningElement {
   //     );
   //   }
   async handlePreview() {
-    if (!this.emailValue || !this.pdfValue) {
+    // if (!this.emailValue || !this.pdfValue) {
+    if (!this.pdfValue) {
       this.dispatchEvent(
         new ShowToastEvent({
           title: "Attantion",
@@ -46,7 +47,8 @@ export default class GeneratePdf extends LightningElement {
         recordId: this.recordId,
         templateId: this.emailValue,
         templateName: this.emailTemplateName,
-        pdfTemplateId: this.pdfValue
+        pdfTemplateId: this.pdfValue,
+        objectApiName: this.objectApiName
       }
     });
     if (result === "success") {
