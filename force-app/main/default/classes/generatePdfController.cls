@@ -48,7 +48,14 @@ public without sharing class generatePdfController {
       pdfPage.getParameters().put('recordId', recordId);
 
       // Get the PDF blob
-      Blob pdfBlob = pdfPage.getContent();
+      Blob pdfBlob;
+      if (Test.isRunningTest()) {
+        // Return a mock PDF blob for testing
+        pdfBlob = Blob.valueOf('Mock PDF Content');
+      } else {
+        // Get actual PDF content in production
+        pdfBlob = pdfPage.getContent();
+      }
 
       // Save as Attachment (for classic objects)
       Attachment attachment = new Attachment();
