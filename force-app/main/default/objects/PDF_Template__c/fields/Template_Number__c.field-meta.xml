@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Template_Number__c</fullName>
+    <externalId>false</externalId>
+    <formula>RIGHT(TEXT( YEAR(Tanggal__c)),2) &amp; &quot;-&quot; &amp; 
+CASE(MONTH(Tanggal__c),
+   1, &quot;I&quot;,
+   2, &quot;II&quot;,
+   3, &quot;III&quot;,
+   4, &quot;IV&quot;,
+   5, &quot;V&quot;,
+   6, &quot;VI&quot;,
+   7, &quot;VII&quot;,
+   8, &quot;VIII&quot;,
+   9, &quot;IX&quot;,
+   10, &quot;X&quot;,
+   11, &quot;XI&quot;,
+   12, &quot;XII&quot;,
+   &quot;Unknown&quot;) &amp; &quot;/&quot; &amp; 
+PDF_Number__c &amp; &quot;/&quot; &amp; 
+Jenis_Surat__r.Name &amp;&quot;/MKT&quot;</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Template Number</label>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

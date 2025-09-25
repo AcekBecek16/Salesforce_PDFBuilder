@@ -29,6 +29,16 @@
                 <default>false</default>
                 <label>Assets_Request__c</label>
             </value>
+            <value>
+                <fullName>Mass_Notification__c</fullName>
+                <default>false</default>
+                <label>Mass_Notification__c</label>
+            </value>
+            <value>
+                <fullName>List_Konsumen__c</fullName>
+                <default>false</default>
+                <label>List_Konsumen__c</label>
+            </value>
         </valueSetDefinition>
     </valueSet>
 </CustomField>

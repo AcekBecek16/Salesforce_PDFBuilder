@@ -277,6 +277,10 @@ export default class PdfBuilder extends LightningElement {
         "__r"
       );
 
+      if (!this.lookupFieldApiName.endsWith("__r")) {
+        this.lookupFieldApiName = this.lookupFieldApiName.slice(0, -2);
+      }
+
       this.isLookupField = true;
       this.lookupObject = lookupMatch[1]; // This will be "Account" in your example
       console.log("Lookup object:", this.lookupObject);

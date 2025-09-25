@@ -291,7 +291,7 @@ public without sharing class generatePdfController {
         );
         List<Messaging.EmailFileAttachment> attachments = new List<Messaging.EmailFileAttachment>();
         Messaging.EmailFileAttachment fileAttachment = new Messaging.EmailFileAttachment();
-        fileAttachment.setFileName(cv.Title + '.' + cv.FileExtension);
+        fileAttachment.setFileName(cv.Title);
         fileAttachment.setBody(cv.VersionData);
         fileAttachment.setContentType('application/pdf');
         attachments.add(fileAttachment);
