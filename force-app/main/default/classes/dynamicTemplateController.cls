@@ -9,6 +9,8 @@ public with sharing class dynamicTemplateController {
         .getParameters()
         .get('templateId');
       String recordId = ApexPages.currentPage().getParameters().get('recordId');
+      String nomorSurat =
+        '' + ApexPages.currentPage().getParameters().get('nomorSurat');
 
       initializeTemplate(templateId);
       Set<String> requiredFields = parseInsertFields(template);
@@ -21,7 +23,7 @@ public with sharing class dynamicTemplateController {
       String[] fieldList = new List<String>(requiredFields);
 
       record = queryRecord(objectApiName, fieldList, recordId);
-      renderedBody = renderTemplateBody(template.Body__c, record);
+      renderedBody = renderTemplateBody(template.Body__c, record, nomorSurat);
     } catch (Exception e) {
       System.debug(
         LoggingLevel.ERROR,
@@ -109,7 +111,11 @@ public with sharing class dynamicTemplateController {
     return results.isEmpty() ? null : results[0];
   }
 
-  private String renderTemplateBody(String body, SObject record) {
+  private String renderTemplateBody(
+    String body,
+    SObject record,
+    String nomorSurat
+  ) {
     if (String.isBlank(body) || record == null) {
       return body;
     }
@@ -120,10 +126,14 @@ public with sharing class dynamicTemplateController {
     // System.debug(
     //   'Serialize: ' + JSON.serialize(record.getPopulatedFieldsAsMap())
     // );
-    return replaceMergeFields(body, fieldMap);
+    return replaceMergeFields(body, fieldMap, nomorSurat);
   }
 
-  private String replaceMergeFields(String body, Map<String, Object> fieldMap) {
+  private String replaceMergeFields(
+    String body,
+    Map<String, Object> fieldMap,
+    String nomorSurat
+  ) {
     Pattern p = Pattern.compile('\\{!Record\\.([a-zA-Z0-9_\\.]+)\\}');
     Matcher m = p.matcher(body);
     while (m.find()) {
@@ -153,6 +163,7 @@ public with sharing class dynamicTemplateController {
       );
       body = body.replace(fullToken, String.valueOf(value));
     }
+    body = body.replace('[jenis_surat]', nomorSurat);
     return body;
   }
 
